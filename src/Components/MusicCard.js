@@ -8,7 +8,11 @@ class MusicCard extends Component {
     super(props);
 
     this.state = {
-      songs: props.songs.slice(1).map((song) => ({ ...song, favorited: false })),
+      songs: props.songs.slice(1).map((song) => {
+        const favorited = props.favoriteSongs
+          .some((favSong) => favSong.trackId === song.trackId);
+        return { ...song, favorited };
+      }),
       loading: false,
     };
 
@@ -46,7 +50,7 @@ class MusicCard extends Component {
             data-testid={ `checkbox-music-${song.trackId}` }
             value={ song.trackId }
             checked={ song.favorited }
-            onClick={ this.handleCheckboxClick }
+            onChange={ this.handleCheckboxClick }
           />
         </label>
       </li>));
@@ -65,6 +69,11 @@ MusicCard.propTypes = {
       track: PropTypes.number,
       trackName: PropTypes.string,
       previewUrl: PropTypes.string,
+    }),
+  ).isRequired,
+  favoriteSongs: PropTypes.arrayOf(
+    PropTypes.shape({
+      trackId: PropTypes.number,
     }),
   ).isRequired,
 };

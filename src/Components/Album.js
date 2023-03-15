@@ -4,6 +4,7 @@ import Header from './Header';
 import Loading from './Loading';
 import getMusics from '../services/musicsAPI';
 import MusicCard from './MusicCard';
+import { getFavoriteSongs } from '../services/favoriteSongsAPI';
 
 class Album extends Component {
   constructor() {
@@ -14,24 +15,37 @@ class Album extends Component {
       artistName: '',
       collectionName: '',
       albumDetails: [],
+      favoriteSongs: [],
     };
   }
 
   async componentDidMount() {
     const { match: { params: { id } } } = this.props;
     const arrayOfSongs = await getMusics(id);
-    // const songs = arrayOfSongs.splice(1);
+    const favoriteSongs = await getFavoriteSongs();
+
+    const updatedSongs = arrayOfSongs.map((song) => {
+      const favorited = favoriteSongs.some((favSong) => favSong.trackId === song.trackId);
+      return { ...song, favorited };
+    });
 
     this.setState({
       artistName: arrayOfSongs[0].artistName,
       collectionName: arrayOfSongs[0].collectionName,
-      albumDetails: arrayOfSongs,
+      albumDetails: updatedSongs,
+      favoriteSongs,
       loading: false,
     });
   }
 
   render() {
-    const { loading, artistName, collectionName, albumDetails } = this.state;
+    const {
+      loading,
+      artistName,
+      collectionName,
+      albumDetails,
+      favoriteSongs } = this.state;
+
     if (loading) {
       return <Loading />;
     }
@@ -41,7 +55,7 @@ class Album extends Component {
         <Header />
         <h1 data-testid="artist-name">{ artistName }</h1>
         <p data-testid="album-name">{ collectionName }</p>
-        <MusicCard songs={ albumDetails } />
+        <MusicCard songs={ albumDetails } favoriteSongs={ favoriteSongs } />
       </div>
     );
   }
